@@ -63,24 +63,14 @@
 
   /* ---------- header ---------- */
   .h1 {
-    margin: 0 0 20px;
+    margin: 0 0 24px;
     line-height: 0;
     text-align: center;
   }
   .logo {
-    width: clamp(200px, 30vw, 360px);
+    width: clamp(140px, 20vw, 191px);
     height: auto;
     display: inline-block;
-  }
-  .subtitle {
-    font-family: 'Archivo', sans-serif;
-    font-weight: 700;
-    font-size: 13px;
-    letter-spacing: 1.4px;
-    text-transform: uppercase;
-    color: var(--ink);
-    margin-bottom: 32px;
-    text-align: center;
   }
 
   /* ---------- main grid (two-column desktop) ---------- */
@@ -466,9 +456,8 @@
   @media (max-width: 600px) {
     body { padding: 24px 0 0; }
     .stage { padding-left: 14px; padding-right: 14px; padding-bottom: 30px; }
-    .h1 { margin-bottom: 14px; }
-    .logo { width: clamp(160px, 50vw, 260px); }
-    .subtitle { font-size: 11px; letter-spacing: 1px; margin-bottom: 14px; }
+    .h1 { margin-bottom: 16px; }
+    .logo { width: clamp(120px, 42vw, 160px); }
     .unit-toggle-wrap { margin-bottom: 8px; }
     .unit-toggle { padding: 3px; }
     .unit-toggle button { padding: 6px 14px; font-size: 11px; letter-spacing: 1px; }
@@ -507,7 +496,7 @@
   }
 
   @media (max-width: 360px) {
-    .logo { width: 150px; }
+    .logo { width: 110px; }
     .label { font-size: 13px; }
     .value, .value-edit { font-size: 20px; }
     .wl-value { font-size: 56px; }
@@ -524,7 +513,6 @@
     <h1 class="h1">
       <img src="LOGO.svg" alt="What's my wingload?" class="logo" />
     </h1>
-    <p class="subtitle">Check your canopy wing loading in seconds.</p>
 
     <!-- unit toggle -->
     <div class="unit-toggle-wrap">
