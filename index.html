@@ -406,7 +406,7 @@
   .footer {
     background: var(--purple);
     width: 100%;
-    padding: 8px 0 36px;
+    padding: 20px 0 36px;
     display: flex;
     justify-content: center;
   }
@@ -415,28 +415,26 @@
     max-width: 960px;
     padding: 0 20px;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 18px;
+    gap: 10px;
+    text-align: center;
   }
-  .footer-logo {
-    width: 42px; height: 42px;
-    border-radius: 50%;
-    background: var(--dark);
-    display: grid;
-    place-items: center;
-    flex-shrink: 0;
-  }
-  .footer-logo svg { width: 22px; height: 22px; }
-  .footer-logo svg path,
-  .footer-logo svg line,
-  .footer-logo svg polyline { stroke: #fff; }
   .footer-text {
     font-family: 'Archivo', sans-serif;
     font-size: 14px;
     color: var(--ink);
-    line-height: 1.45;
     font-weight: 500;
   }
+  .footer-credit {
+    font-family: 'Archivo', sans-serif;
+    font-size: 12px;
+    color: var(--ink);
+    font-weight: 500;
+    opacity: 0.6;
+    text-decoration: none;
+  }
+  .footer-credit:hover { opacity: 1; text-decoration: underline; }
 
   /* page wrapper to anchor footer */
   .page {
@@ -488,11 +486,10 @@
     .pointer { border-left-width: 7px; border-right-width: 7px; border-bottom-width: 11px; }
     .scale-labels { font-size: 10px; letter-spacing: 0.8px; margin-top: 10px; }
     .footer-tear { height: 44px; }
-    .footer { padding: 6px 0 24px; }
-    .footer-inner { padding: 0 14px; gap: 14px; }
-    .footer-logo { width: 36px; height: 36px; }
-    .footer-logo svg { width: 18px; height: 18px; }
-    .footer-text { font-size: 13px; line-height: 1.4; }
+    .footer { padding: 14px 0 24px; }
+    .footer-inner { padding: 0 14px; gap: 8px; }
+    .footer-text { font-size: 12px; }
+    .footer-credit { font-size: 11px; }
   }
 
   @media (max-width: 360px) {
@@ -627,17 +624,8 @@
     <div class="footer-tear" aria-hidden="true"></div>
     <div class="footer">
       <div class="footer-inner">
-        <div class="footer-logo" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 11c0-5 4-8 9-8s9 3 9 8"></path>
-            <path d="M3 11l4 1 1-4M21 11l-4 1-1-4M12 3v9"></path>
-            <path d="M9 12l3 9 3-9"></path>
-          </svg>
-        </div>
-        <div class="footer-text">
-          For informational use only.<br/>
-          Not a substitute for qualified coaching.
-        </div>
+        <div class="footer-text">For informational use only. Not a substitute for qualified coaching.</div>
+        <a class="footer-credit" href="https://mathiasarlund.com/" target="_blank" rel="noopener">Created by mathiasarlund.com</a>
       </div>
     </div>
   </div>
