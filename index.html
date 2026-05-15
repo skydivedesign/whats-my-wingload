@@ -63,12 +63,13 @@
 
   /* ---------- header ---------- */
   .h1 {
-    font-family: 'Archivo Black', 'Archivo', sans-serif;
-    font-size: clamp(40px, 5.5vw, 64px);
-    line-height: 1.0;
-    letter-spacing: -2px;
-    color: var(--ink);
-    margin-bottom: 14px;
+    margin: 0 0 20px;
+    line-height: 0;
+  }
+  .logo {
+    width: clamp(200px, 30vw, 360px);
+    height: auto;
+    display: block;
   }
   .subtitle {
     font-family: 'Space Mono', ui-monospace, monospace;
@@ -461,7 +462,8 @@
   @media (max-width: 600px) {
     body { padding: 24px 0 0; }
     .stage { padding-left: 14px; padding-right: 14px; padding-bottom: 30px; }
-    .h1 { font-size: clamp(32px, 10vw, 44px); line-height: 0.95; letter-spacing: -1.5px; margin-bottom: 12px; }
+    .h1 { margin-bottom: 14px; }
+    .logo { width: clamp(160px, 50vw, 260px); }
     .subtitle { font-size: 13px; margin-bottom: 14px; }
     .unit-toggle-wrap { margin-bottom: 8px; }
     .unit-toggle { padding: 3px; }
@@ -501,7 +503,7 @@
   }
 
   @media (max-width: 360px) {
-    .h1 { font-size: 31px; }
+    .logo { width: 150px; }
     .label { font-size: 13px; }
     .value, .value-edit { font-size: 20px; }
     .wl-value { font-size: 56px; }
@@ -515,7 +517,9 @@
   <div class="stage">
 
     <!-- header -->
-    <h1 class="h1">What's my wingload?</h1>
+    <h1 class="h1">
+      <img src="LOGO.svg" alt="What's my wingload?" class="logo" />
+    </h1>
     <p class="subtitle">Check your canopy wing loading in seconds.</p>
 
     <!-- unit toggle -->
