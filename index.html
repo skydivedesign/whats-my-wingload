@@ -65,18 +65,22 @@
   .h1 {
     margin: 0 0 20px;
     line-height: 0;
+    text-align: center;
   }
   .logo {
     width: clamp(200px, 30vw, 360px);
     height: auto;
-    display: block;
+    display: inline-block;
   }
   .subtitle {
-    font-family: 'Space Mono', ui-monospace, monospace;
-    font-size: 16px;
+    font-family: 'Archivo', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
     color: var(--ink);
     margin-bottom: 32px;
-    letter-spacing: 0.2px;
+    text-align: center;
   }
 
   /* ---------- main grid (two-column desktop) ---------- */
@@ -464,7 +468,7 @@
     .stage { padding-left: 14px; padding-right: 14px; padding-bottom: 30px; }
     .h1 { margin-bottom: 14px; }
     .logo { width: clamp(160px, 50vw, 260px); }
-    .subtitle { font-size: 13px; margin-bottom: 14px; }
+    .subtitle { font-size: 11px; letter-spacing: 1px; margin-bottom: 14px; }
     .unit-toggle-wrap { margin-bottom: 8px; }
     .unit-toggle { padding: 3px; }
     .unit-toggle button { padding: 6px 14px; font-size: 11px; letter-spacing: 1px; }
