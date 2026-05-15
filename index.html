@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="theme-color" content="#1e6fb4" />
+<title>Wingload Calculator</title>
+<style>
+  :root {
+    --sky-top: #0a3d6b;
+    --sky-mid: #2c8fd1;
+    --sky-low: #8fcef5;
+    --cloud: #ffffff;
+    --text: #0c2740;
+    --text-soft: #4a6580;
+    --card-bg: rgba(255, 255, 255, 0.92);
+    --card-border: rgba(255, 255, 255, 0.6);
+    --shadow: 0 20px 60px rgba(10, 50, 90, 0.25);
+
+    --c-student:      #4ea8de;
+    --c-novice:       #52c41a;
+    --c-intermediate: #a0d911;
+    --c-experienced:  #fadb14;
+    --c-advanced:     #fa8c16;
+    --c-expert:       #f5222d;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body { height: 100%; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--text);
+    background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 55%, var(--sky-low) 100%);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+    padding: 36px 16px 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* clouds */
+  .cloud {
+    position: absolute;
+    background: var(--cloud);
+    border-radius: 50%;
+    opacity: 0.55;
+    filter: blur(2px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .cloud::before, .cloud::after {
+    content: "";
+    position: absolute;
+    background: var(--cloud);
+    border-radius: 50%;
+  }
+  .c1 { width: 180px; height: 50px; top: 8%;  left: -40px; }
+  .c1::before { width: 90px;  height: 90px;  top: -45px; left: 30px; }
+  .c1::after  { width: 70px;  height: 70px;  top: -35px; left: 100px; }
+
+  .c2 { width: 220px; height: 60px; top: 22%; right: -60px; opacity: 0.4; }
+  .c2::before { width: 110px; height: 110px; top: -55px; left: 40px; }
+  .c2::after  { width: 80px;  height: 80px;  top: -40px; left: 130px; }
+
+  .c3 { width: 140px; height: 40px; bottom: 14%; left: 8%; opacity: 0.35; }
+  .c3::before { width: 70px; height: 70px; top: -35px; left: 20px; }
+  .c3::after  { width: 55px; height: 55px; top: -25px; left: 75px; }
+
+  header {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    color: #fff;
+    margin-bottom: 28px;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  }
+  header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  header p {
+    font-size: 13px;
+    opacity: 0.9;
+    margin-top: 4px;
+    font-weight: 400;
+  }
+
+  .card {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 560px;
+    background: var(--card-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--card-border);
+    border-radius: 22px;
+    padding: 26px 30px;
+    box-shadow: var(--shadow);
+  }
+
+  /* unit toggle */
+  .unit-toggle {
+    display: flex;
+    background: #eaf2fa;
+    border-radius: 10px;
+    padding: 3px;
+    margin-bottom: 16px;
+    position: relative;
+  }
+  .unit-toggle button {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 8px 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-soft);
+    cursor: pointer;
+    border-radius: 8px;
+    transition: color 0.2s;
+    position: relative;
+    z-index: 1;
+    font-family: inherit;
+  }
+  .unit-toggle button.active { color: #fff; }
+  .unit-toggle .slider {
+    position: absolute;
+    top: 3px;
+    bottom: 3px;
+    left: 3px;
+    width: calc(50% - 3px);
+    background: linear-gradient(135deg, #2c8fd1, #1e6fb4);
+    border-radius: 8px;
+    transition: transform 0.25s ease;
+    z-index: 0;
+  }
+  .unit-toggle.lbs .slider { transform: translateX(100%); }
+
+  .field {
+    background: #e4eef8;
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+  .field-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-soft);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .field-label .unit { color: #1e6fb4; font-weight: 700; }
+
+  .input-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .num-input {
+    flex: 1;
+    background: #fff;
+    border: 1.5px solid #d9e6f2;
+    border-radius: 10px;
+    padding: 9px 12px;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text);
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    width: 100%;
+    -moz-appearance: textfield;
+  }
+  .num-input::-webkit-outer-spin-button,
+  .num-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  .num-input:focus {
+    border-color: #2c8fd1;
+    box-shadow: 0 0 0 3px rgba(44, 143, 209, 0.15);
+  }
+
+  /* slider */
+  .slider-row { margin-top: 8px; }
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    background: linear-gradient(to right, #8fcef5, #1e6fb4);
+    border-radius: 3px;
+    outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #fff;
+    border: 3px solid #1e6fb4;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(10, 50, 90, 0.25);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #fff;
+    border: 3px solid #1e6fb4;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(10, 50, 90, 0.25);
+  }
+
+  .range-bounds {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--text-soft);
+    margin-top: 4px;
+    font-weight: 500;
+  }
+
+  /* result */
+  .result {
+    margin-top: 18px;
+    padding: 18px 22px;
+    background: linear-gradient(135deg, #0a3d6b 0%, #1e6fb4 100%);
+    border-radius: 16px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .result-main {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .result-prefix {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    opacity: 0.6;
+  }
+  .result-value {
+    font-size: 52px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -2px;
+    font-variant-numeric: tabular-nums;
+  }
+  .result-category {
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    white-space: nowrap;
+  }
+
+  /* scale */
+  .scale {
+    margin-top: 16px;
+    position: relative;
+  }
+  .scale-bar {
+    height: 10px;
+    border-radius: 5px;
+    background: linear-gradient(to right,
+      var(--c-student)      0%,
+      var(--c-student)      16%,
+      var(--c-novice)       16%,
+      var(--c-novice)       32%,
+      var(--c-intermediate) 32%,
+      var(--c-intermediate) 52%,
+      var(--c-experienced)  52%,
+      var(--c-experienced)  68%,
+      var(--c-advanced)     68%,
+      var(--c-advanced)     84%,
+      var(--c-expert)       84%,
+      var(--c-expert)       100%);
+    position: relative;
+  }
+  .scale-pointer {
+    position: absolute;
+    top: -6px;
+    width: 4px;
+    height: 22px;
+    background: var(--text);
+    border-radius: 2px;
+    transform: translateX(-50%);
+    transition: left 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
+  .scale-ticks {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--text-soft);
+    margin-top: 6px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .disclaimer {
+    margin-top: 14px;
+    font-size: 11px;
+    line-height: 1.4;
+    color: var(--text-soft);
+    text-align: center;
+    padding: 0 8px;
+  }
+
+  footer {
+    position: relative;
+    z-index: 1;
+    margin-top: 14px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.7);
+    text-align: center;
+  }
+
+  @media (max-width: 380px) {
+    header h1 { font-size: 26px; }
+    .result-value { font-size: 54px; }
+    .card { padding: 22px 18px; }
+  }
+</style>
+</head>
+<body>
+  <div class="cloud c1"></div>
+  <div class="cloud c2"></div>
+  <div class="cloud c3"></div>
+
+  <header>
+    <h1>Wingload Calculator</h1>
+    <p>Check your canopy wing loading in seconds</p>
+  </header>
+
+  <div class="card">
+    <div class="unit-toggle" id="unitToggle">
+      <div class="slider"></div>
+      <button type="button" data-unit="kg" class="active">Kilograms</button>
+      <button type="button" data-unit="lbs">Pounds</button>
+    </div>
+
+    <div class="field">
+      <div class="field-label">
+        <span>Body weight</span>
+        <span class="unit" id="bodyUnitLabel">kg</span>
+      </div>
+      <div class="input-row">
+        <input type="number" class="num-input" id="bodyWeight" value="80" min="0" step="0.5" inputmode="decimal" />
+      </div>
+      <div class="slider-row">
+        <input type="range" id="bodySlider" />
+        <div class="range-bounds">
+          <span id="bodyMinLabel">40</span>
+          <span id="bodyMaxLabel">150</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="field-label">
+        <span>Gear weight</span>
+        <span class="unit" id="gearUnitLabel">kg</span>
+      </div>
+      <div class="input-row">
+        <input type="number" class="num-input" id="gearWeight" value="12" min="0" step="0.5" inputmode="decimal" />
+      </div>
+      <div class="slider-row">
+        <input type="range" id="gearSlider" />
+        <div class="range-bounds">
+          <span id="gearMinLabel">5</span>
+          <span id="gearMaxLabel">25</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="field-label">
+        <span>Canopy size</span>
+        <span class="unit">sq ft</span>
+      </div>
+      <div class="input-row">
+        <input type="number" class="num-input" id="canopySize" value="170" min="60" max="400" step="1" inputmode="numeric" />
+      </div>
+      <div class="slider-row">
+        <input type="range" id="canopySlider" min="60" max="400" step="1" value="170" />
+        <div class="range-bounds">
+          <span>60</span>
+          <span>400</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="result">
+      <div class="result-main">
+        <span class="result-prefix">WL</span>
+        <span class="result-value" id="wlValue">1.41</span>
+      </div>
+      <div class="result-category" id="wlCategory">Intermediate</div>
+    </div>
+
+    <div class="scale">
+      <div class="scale-bar">
+        <div class="scale-pointer" id="scalePointer" style="left: 50%;"></div>
+      </div>
+      <div class="scale-ticks">
+        <span>0.5</span>
+        <span>0.8</span>
+        <span>1.1</span>
+        <span>1.4</span>
+        <span>1.7</span>
+        <span>2.0</span>
+        <span>2.3+</span>
+      </div>
+    </div>
+
+    <p class="disclaimer">
+      Wing loading is one of many factors in canopy selection.
+      Always consult your instructor, S&amp;TA, or a canopy coach
+      before downsizing.
+    </p>
+  </div>
+
+  <footer>For informational use only · Not a substitute for qualified coaching</footer>
+
+<script>
+(() => {
+  const KG_TO_LBS = 2.20462262;
+
+  const els = {
+    unitToggle:    document.getElementById('unitToggle'),
+    bodyWeight:    document.getElementById('bodyWeight'),
+    bodySlider:    document.getElementById('bodySlider'),
+    bodyMinLabel:  document.getElementById('bodyMinLabel'),
+    bodyMaxLabel:  document.getElementById('bodyMaxLabel'),
+    gearWeight:    document.getElementById('gearWeight'),
+    gearSlider:    document.getElementById('gearSlider'),
+    gearMinLabel:  document.getElementById('gearMinLabel'),
+    gearMaxLabel:  document.getElementById('gearMaxLabel'),
+    canopySize:    document.getElementById('canopySize'),
+    canopySlider:  document.getElementById('canopySlider'),
+    wlValue:       document.getElementById('wlValue'),
+    wlCategory:    document.getElementById('wlCategory'),
+    scalePointer:  document.getElementById('scalePointer'),
+    bodyUnitLabel: document.getElementById('bodyUnitLabel'),
+    gearUnitLabel: document.getElementById('gearUnitLabel'),
+  };
+
+  // slider ranges per unit (the slider always operates in the displayed unit)
+  const RANGES = {
+    kg:  { body: { min: 40, max: 150, step: 0.5 }, gear: { min: 5,  max: 25, step: 0.5 } },
+    lbs: { body: { min: 88, max: 330, step: 1   }, gear: { min: 11, max: 55, step: 1   } },
+  };
+
+  const state = {
+    unit: 'kg',
+    bodyKg: 80,
+    gearKg: 12,
+    canopy: 170,
+  };
+
+  const STORAGE_KEY = 'wingload-calc-v1';
+
+  function loadState() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      if (saved && typeof saved === 'object') Object.assign(state, saved);
+    } catch (e) { /* ignore */ }
+  }
+
+  function saveState() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+  }
+
+  // wingload bands (psf) — bar covers 0.5 → 2.3+
+  const BANDS = [
+    { max: 0.8,      label: 'Student',      color: 'var(--c-student)' },
+    { max: 1.1,      label: 'Novice',       color: 'var(--c-novice)' },
+    { max: 1.4,      label: 'Intermediate', color: 'var(--c-intermediate)' },
+    { max: 1.7,      label: 'Experienced',  color: 'var(--c-experienced)' },
+    { max: 2.0,      label: 'Advanced',     color: 'var(--c-advanced)' },
+    { max: Infinity, label: 'Expert',       color: 'var(--c-expert)' },
+  ];
+
+  function bandFor(wl) {
+    return BANDS.find(b => wl < b.max) || BANDS[BANDS.length - 1];
+  }
+
+  // map wl 0.5..2.3 → 0..100% on the bar; clamp outside
+  function scalePercent(wl) {
+    const min = 0.5, max = 2.3;
+    const p = ((wl - min) / (max - min)) * 100;
+    return Math.max(0, Math.min(100, p));
+  }
+
+  function applySliderRanges() {
+    const r = RANGES[state.unit];
+    els.bodySlider.min = r.body.min;
+    els.bodySlider.max = r.body.max;
+    els.bodySlider.step = r.body.step;
+    els.bodyMinLabel.textContent = r.body.min;
+    els.bodyMaxLabel.textContent = r.body.max;
+
+    els.gearSlider.min = r.gear.min;
+    els.gearSlider.max = r.gear.max;
+    els.gearSlider.step = r.gear.step;
+    els.gearMinLabel.textContent = r.gear.min;
+    els.gearMaxLabel.textContent = r.gear.max;
+  }
+
+  function render() {
+    applySliderRanges();
+
+    // sync visible inputs to current unit
+    let bodyDisplay, gearDisplay;
+    if (state.unit === 'kg') {
+      bodyDisplay = round1(state.bodyKg);
+      gearDisplay = round1(state.gearKg);
+      els.bodyUnitLabel.textContent = 'kg';
+      els.gearUnitLabel.textContent = 'kg';
+      els.unitToggle.classList.remove('lbs');
+    } else {
+      bodyDisplay = round1(state.bodyKg * KG_TO_LBS);
+      gearDisplay = round1(state.gearKg * KG_TO_LBS);
+      els.bodyUnitLabel.textContent = 'lbs';
+      els.gearUnitLabel.textContent = 'lbs';
+      els.unitToggle.classList.add('lbs');
+    }
+    els.bodyWeight.value = bodyDisplay;
+    els.bodySlider.value = bodyDisplay;
+    els.gearWeight.value = gearDisplay;
+    els.gearSlider.value = gearDisplay;
+    els.canopySize.value = state.canopy;
+    els.canopySlider.value = state.canopy;
+
+    // compute wingload (always lbs/sqft)
+    const exitLbs = (state.bodyKg + state.gearKg) * KG_TO_LBS;
+    const wl = exitLbs / state.canopy;
+
+    els.wlValue.textContent = wl.toFixed(2);
+
+    const band = bandFor(wl);
+    els.wlCategory.textContent = band.label;
+    els.wlCategory.style.background = `${band.color}33`;
+    els.wlCategory.style.borderColor = band.color;
+
+    els.scalePointer.style.left = scalePercent(wl) + '%';
+
+    saveState();
+  }
+
+  function round1(n) {
+    return Math.round(n * 10) / 10;
+  }
+
+  // input handlers
+  els.bodyWeight.addEventListener('input', () => {
+    const v = parseFloat(els.bodyWeight.value);
+    if (isNaN(v) || v < 0) return;
+    state.bodyKg = state.unit === 'kg' ? v : v / KG_TO_LBS;
+    els.bodySlider.value = v;
+    updateAfterTyping();
+  });
+
+  els.bodySlider.addEventListener('input', () => {
+    const v = parseFloat(els.bodySlider.value);
+    state.bodyKg = state.unit === 'kg' ? v : v / KG_TO_LBS;
+    els.bodyWeight.value = round1(v);
+    updateAfterTyping();
+  });
+
+  els.gearWeight.addEventListener('input', () => {
+    const v = parseFloat(els.gearWeight.value);
+    if (isNaN(v) || v < 0) return;
+    state.gearKg = state.unit === 'kg' ? v : v / KG_TO_LBS;
+    els.gearSlider.value = v;
+    updateAfterTyping();
+  });
+
+  els.gearSlider.addEventListener('input', () => {
+    const v = parseFloat(els.gearSlider.value);
+    state.gearKg = state.unit === 'kg' ? v : v / KG_TO_LBS;
+    els.gearWeight.value = round1(v);
+    updateAfterTyping();
+  });
+
+  els.canopySize.addEventListener('input', () => {
+    let v = parseInt(els.canopySize.value, 10);
+    if (isNaN(v)) return;
+    v = Math.max(60, Math.min(400, v));
+    state.canopy = v;
+    els.canopySlider.value = v;
+    updateAfterTyping();
+  });
+
+  els.canopySlider.addEventListener('input', () => {
+    state.canopy = parseInt(els.canopySlider.value, 10);
+    els.canopySize.value = state.canopy;
+    updateAfterTyping();
+  });
+
+  // update result without re-writing the input the user is currently typing into
+  function updateAfterTyping() {
+    const exitLbs = (state.bodyKg + state.gearKg) * KG_TO_LBS;
+    const wl = exitLbs / state.canopy;
+    els.wlValue.textContent = wl.toFixed(2);
+    const band = bandFor(wl);
+    els.wlCategory.textContent = band.label;
+    els.wlCategory.style.background = `${band.color}33`;
+    els.wlCategory.style.borderColor = band.color;
+    els.scalePointer.style.left = scalePercent(wl) + '%';
+    saveState();
+  }
+
+  // unit toggle
+  els.unitToggle.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const unit = btn.dataset.unit;
+      if (unit === state.unit) return;
+      state.unit = unit;
+      els.unitToggle.querySelectorAll('button').forEach(b =>
+        b.classList.toggle('active', b.dataset.unit === unit));
+      render();
+    });
+  });
+
+  // select-all on focus so typing replaces the value
+  [els.bodyWeight, els.gearWeight, els.canopySize].forEach(input => {
+    input.addEventListener('focus', () => input.select());
+  });
+
+  loadState();
+  render();
+})();
+</script>
+</body>
+</html>
