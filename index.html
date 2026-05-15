@@ -74,8 +74,41 @@
     font-family: 'Space Mono', ui-monospace, monospace;
     font-size: 16px;
     color: var(--ink);
-    margin-bottom: 36px;
+    margin-bottom: 24px;
     letter-spacing: 0.2px;
+  }
+
+  /* ---------- unit toggle ---------- */
+  .unit-toggle-wrap {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 12px;
+  }
+  .unit-toggle {
+    display: inline-flex;
+    background: var(--card);
+    border-radius: 999px;
+    padding: 4px;
+    gap: 2px;
+  }
+  .unit-toggle button {
+    font-family: 'Archivo Black', 'Archivo', sans-serif;
+    font-size: 12px;
+    letter-spacing: 1.2px;
+    padding: 8px 18px;
+    border-radius: 999px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .unit-toggle button.active {
+    background: var(--ink);
+    color: #fff;
+  }
+  .unit-toggle button:hover:not(.active) {
+    color: var(--ink);
   }
 
   /* ---------- sliders card ---------- */
@@ -283,14 +316,7 @@
     line-height: 0.92;
     color: var(--pink-soft);
     letter-spacing: -3px;
-    margin: 4px 0 10px;
-  }
-  .wl-unit {
-    font-family: 'Archivo', sans-serif;
-    font-weight: 700;
-    font-size: 11px;
-    letter-spacing: 1.4px;
-    color: rgba(255,255,255,0.85);
+    margin: 4px 0 0;
   }
   .divider {
     width: 1px;
@@ -456,6 +482,14 @@
     <h1 class="h1">Wingload<br/>Calculator</h1>
     <p class="subtitle">Check your canopy wing loading in seconds.</p>
 
+    <!-- unit toggle -->
+    <div class="unit-toggle-wrap">
+      <div class="unit-toggle" role="tablist" aria-label="Weight unit">
+        <button type="button" class="active" data-unit="kg" role="tab" aria-selected="true">KG</button>
+        <button type="button" data-unit="lbs" role="tab" aria-selected="false">LBS</button>
+      </div>
+    </div>
+
     <!-- sliders -->
     <section class="sliders">
 
@@ -471,14 +505,14 @@
           <div class="field-top">
             <span class="label">Your Body Weight</span>
             <span class="value-wrap">
-              <input class="value-edit" id="bodyInput" type="number" value="80" min="40" max="150" step="0.5" inputmode="decimal" />
-              <span class="unit body">KG</span>
+              <input class="value-edit" id="bodyInput" type="number" value="80" min="40" max="150" step="1" inputmode="numeric" />
+              <span class="unit body" id="bodyUnitLabel">KG</span>
             </span>
           </div>
           <div class="slider-wrap">
-            <input class="body" id="bodyRange" type="range" min="40" max="150" step="0.5" value="80" />
+            <input class="body" id="bodyRange" type="range" min="40" max="150" step="1" value="80" />
           </div>
-          <div class="range-meta"><span>40</span><span>150</span></div>
+          <div class="range-meta"><span id="bodyMin">40</span><span id="bodyMax">150</span></div>
         </div>
       </div>
 
@@ -495,14 +529,14 @@
           <div class="field-top">
             <span class="label">Gear Weight</span>
             <span class="value-wrap">
-              <input class="value-edit" id="gearInput" type="number" value="12" min="5" max="25" step="0.5" inputmode="decimal" />
-              <span class="unit gear">KG</span>
+              <input class="value-edit" id="gearInput" type="number" value="12" min="5" max="25" step="1" inputmode="numeric" />
+              <span class="unit gear" id="gearUnitLabel">KG</span>
             </span>
           </div>
           <div class="slider-wrap">
-            <input class="gear" id="gearRange" type="range" min="5" max="25" step="0.5" value="12" />
+            <input class="gear" id="gearRange" type="range" min="5" max="25" step="1" value="12" />
           </div>
-          <div class="range-meta"><span>5</span><span>25</span></div>
+          <div class="range-meta"><span id="gearMin">5</span><span id="gearMax">25</span></div>
         </div>
       </div>
 
@@ -539,7 +573,6 @@
         <div class="result-left">
           <div class="label-small">YOUR WING LOADING</div>
           <div class="wl-value" id="wlValue">1.19</div>
-          <div class="wl-unit">POUNDS PER SQUARE FOOT</div>
         </div>
         <div class="divider" aria-hidden="true"></div>
         <div class="result-right">
@@ -594,7 +627,15 @@
   const KG_TO_LBS = 2.20462262;
   const STORAGE_KEY = 'wingload-calc-v2';
 
+  // Slider config per unit (whole-number steps for body + gear)
+  const RANGES = {
+    kg:  { body: { min: 40, max: 150 }, gear: { min: 5,  max: 25 } },
+    lbs: { body: { min: 88, max: 330 }, gear: { min: 11, max: 55 } }
+  };
+
+  // Internal storage is ALWAYS in kg. Conversion happens at display & input boundary.
   const state = {
+    unit: 'kg',
     bodyKg: 80,
     gearKg: 12,
     canopy: 170
@@ -604,6 +645,7 @@
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
     if (saved && typeof saved === 'object') {
+      if (saved.unit === 'kg' || saved.unit === 'lbs') state.unit = saved.unit;
       if (typeof saved.bodyKg === 'number') state.bodyKg = saved.bodyKg;
       if (typeof saved.gearKg === 'number') state.gearKg = saved.gearKg;
       if (typeof saved.canopy === 'number') state.canopy = saved.canopy;
@@ -625,12 +667,28 @@
   const bodyRange   = document.getElementById('bodyRange');
   const gearRange   = document.getElementById('gearRange');
   const canopyRange = document.getElementById('canopyRange');
+  const bodyUnitLbl = document.getElementById('bodyUnitLabel');
+  const gearUnitLbl = document.getElementById('gearUnitLabel');
+  const bodyMinLbl  = document.getElementById('bodyMin');
+  const bodyMaxLbl  = document.getElementById('bodyMax');
+  const gearMinLbl  = document.getElementById('gearMin');
+  const gearMaxLbl  = document.getElementById('gearMax');
   const wlValueEl   = document.getElementById('wlValue');
   const bandPill    = document.getElementById('bandPill');
   const bandDesc    = document.getElementById('bandDesc');
   const pointer     = document.getElementById('pointer');
+  const toggleBtns  = document.querySelectorAll('.unit-toggle button');
 
   function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+
+  // Convert internal kg → currently-displayed unit (whole number)
+  function toDisplay(kg) {
+    return state.unit === 'kg' ? Math.round(kg) : Math.round(kg * KG_TO_LBS);
+  }
+  // Convert displayed value → internal kg
+  function toKg(displayVal) {
+    return state.unit === 'kg' ? displayVal : displayVal / KG_TO_LBS;
+  }
 
   function updateRangeFill(rangeEl) {
     const min = parseFloat(rangeEl.min);
@@ -647,19 +705,46 @@
     return BANDS[BANDS.length - 1];
   }
 
+  function applySliderBounds() {
+    const r = RANGES[state.unit];
+    bodyRange.min = r.body.min;  bodyRange.max = r.body.max;  bodyRange.step = 1;
+    bodyInput.min = r.body.min;  bodyInput.max = r.body.max;  bodyInput.step = 1;
+    gearRange.min = r.gear.min;  gearRange.max = r.gear.max;  gearRange.step = 1;
+    gearInput.min = r.gear.min;  gearInput.max = r.gear.max;  gearInput.step = 1;
+    bodyMinLbl.textContent = r.body.min;
+    bodyMaxLbl.textContent = r.body.max;
+    gearMinLbl.textContent = r.gear.min;
+    gearMaxLbl.textContent = r.gear.max;
+    const u = state.unit.toUpperCase();
+    bodyUnitLbl.textContent = u;
+    gearUnitLbl.textContent = u;
+  }
+
   function render() {
-    // sync UI
-    bodyInput.value   = state.bodyKg;
-    gearInput.value   = state.gearKg;
+    applySliderBounds();
+
+    // display values (converted from internal kg)
+    const bodyDisp = toDisplay(state.bodyKg);
+    const gearDisp = toDisplay(state.gearKg);
+
+    bodyInput.value   = bodyDisp;
+    gearInput.value   = gearDisp;
     canopyInput.value = state.canopy;
-    bodyRange.value   = state.bodyKg;
-    gearRange.value   = state.gearKg;
+    bodyRange.value   = bodyDisp;
+    gearRange.value   = gearDisp;
     canopyRange.value = state.canopy;
     updateRangeFill(bodyRange);
     updateRangeFill(gearRange);
     updateRangeFill(canopyRange);
 
-    // calculate
+    // toggle active state
+    toggleBtns.forEach(b => {
+      const active = b.dataset.unit === state.unit;
+      b.classList.toggle('active', active);
+      b.setAttribute('aria-selected', active ? 'true' : 'false');
+    });
+
+    // calculate (always uses internal kg)
     const exitLbs = (state.bodyKg + state.gearKg) * KG_TO_LBS;
     const wl = exitLbs / state.canopy;
     wlValueEl.textContent = wl.toFixed(2);
@@ -678,31 +763,65 @@
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
   }
 
-  function bindPair(rangeEl, inputEl, key, min, max, step) {
+  // Bind paired range + numeric input for a "weight" field that respects the active unit
+  function bindWeightPair(rangeEl, inputEl, key) {
     rangeEl.addEventListener('input', () => {
-      state[key] = parseFloat(rangeEl.value);
+      const raw = parseFloat(rangeEl.value);
+      state[key] = toKg(raw);
       render();
     });
     inputEl.addEventListener('input', () => {
       const raw = parseFloat(inputEl.value);
       if (Number.isNaN(raw)) return;
-      state[key] = clamp(raw, min, max);
-      // round to step when reasonable
+      const r = RANGES[state.unit][key === 'bodyKg' ? 'body' : 'gear'];
+      state[key] = toKg(clamp(raw, r.min, r.max));
       render();
     });
     inputEl.addEventListener('blur', () => {
       if (Number.isNaN(parseFloat(inputEl.value))) {
-        inputEl.value = state[key];
+        inputEl.value = toDisplay(state[key]);
       } else {
-        state[key] = clamp(parseFloat(inputEl.value), min, max);
+        const r = RANGES[state.unit][key === 'bodyKg' ? 'body' : 'gear'];
+        state[key] = toKg(clamp(parseFloat(inputEl.value), r.min, r.max));
         render();
       }
     });
   }
 
-  bindPair(bodyRange,   bodyInput,   'bodyKg', 40, 150, 0.5);
-  bindPair(gearRange,   gearInput,   'gearKg', 5,  25,  0.5);
-  bindPair(canopyRange, canopyInput, 'canopy', 60, 400, 1);
+  // Canopy is always sq ft regardless of unit toggle
+  function bindCanopy() {
+    canopyRange.addEventListener('input', () => {
+      state.canopy = parseFloat(canopyRange.value);
+      render();
+    });
+    canopyInput.addEventListener('input', () => {
+      const raw = parseFloat(canopyInput.value);
+      if (Number.isNaN(raw)) return;
+      state.canopy = clamp(raw, 60, 400);
+      render();
+    });
+    canopyInput.addEventListener('blur', () => {
+      if (Number.isNaN(parseFloat(canopyInput.value))) {
+        canopyInput.value = state.canopy;
+      } else {
+        state.canopy = clamp(parseFloat(canopyInput.value), 60, 400);
+        render();
+      }
+    });
+  }
+
+  bindWeightPair(bodyRange, bodyInput, 'bodyKg');
+  bindWeightPair(gearRange, gearInput, 'gearKg');
+  bindCanopy();
+
+  // toggle handler
+  toggleBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (state.unit === btn.dataset.unit) return;
+      state.unit = btn.dataset.unit;
+      render();
+    });
+  });
 
   render();
 </script>
