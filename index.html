@@ -54,7 +54,7 @@
 
   .stage {
     width: 100%;
-    max-width: 640px;
+    max-width: 960px;
     margin: 0 auto;
     position: relative;
     z-index: 1;
@@ -64,24 +64,37 @@
   /* ---------- header ---------- */
   .h1 {
     font-family: 'Archivo Black', 'Archivo', sans-serif;
-    font-size: clamp(48px, 11vw, 82px);
-    line-height: 0.92;
+    font-size: clamp(40px, 5.5vw, 64px);
+    line-height: 1.0;
     letter-spacing: -2px;
     color: var(--ink);
-    margin-bottom: 22px;
+    margin-bottom: 14px;
   }
   .subtitle {
     font-family: 'Space Mono', ui-monospace, monospace;
     font-size: 16px;
     color: var(--ink);
-    margin-bottom: 24px;
+    margin-bottom: 32px;
     letter-spacing: 0.2px;
+  }
+
+  /* ---------- main grid (two-column desktop) ---------- */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+  .right-col {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
   }
 
   /* ---------- unit toggle ---------- */
   .unit-toggle-wrap {
     display: flex;
-    justify-content: flex-end;
+    justify-content: flex-start;
     margin-bottom: 12px;
   }
   .unit-toggle {
@@ -115,8 +128,7 @@
   .sliders {
     background: var(--card);
     border-radius: 22px;
-    padding: 24px 26px;
-    margin-bottom: 26px;
+    padding: 18px 26px;
   }
   .row {
     display: grid;
@@ -265,7 +277,6 @@
   /* ---------- result block ---------- */
   .result-wrap {
     position: relative;
-    margin-bottom: 22px;
   }
   .tape {
     position: absolute;
@@ -295,11 +306,11 @@
     background: var(--dark);
     color: #fff;
     border-radius: 22px;
-    padding: 30px 32px 32px;
+    padding: 27px 32px 25px;
     display: grid;
-    grid-template-columns: 1fr 1px 1fr;
-    gap: 28px;
-    align-items: center;
+    grid-template-columns: 1fr;
+    gap: 18px;
+    align-items: stretch;
     position: relative;
   }
   .result-left .label-small {
@@ -308,19 +319,19 @@
     font-size: 12px;
     letter-spacing: 1.4px;
     color: rgba(255,255,255,0.85);
-    margin-bottom: 8px;
+    margin-bottom: 4px;
   }
   .wl-value {
     font-family: 'Archivo Black', sans-serif;
-    font-size: clamp(72px, 18vw, 108px);
+    font-size: clamp(64px, 9vw, 80px);
     line-height: 0.92;
     color: var(--pink-soft);
     letter-spacing: -3px;
     margin: 4px 0 0;
   }
   .divider {
-    width: 1px;
-    height: 80%;
+    width: 100%;
+    height: 1px;
     background: rgba(255,255,255,0.18);
   }
   .result-right { display: flex; flex-direction: column; gap: 14px; }
@@ -347,7 +358,6 @@
     background: var(--card);
     border-radius: 22px;
     padding: 18px 22px 20px;
-    margin-bottom: 56px;
   }
   .ticks {
     display: flex;
@@ -456,6 +466,11 @@
   }
 
   /* responsive tweaks */
+  @media (max-width: 880px) {
+    .main-grid { grid-template-columns: 1fr; gap: 18px; }
+    .right-col { gap: 16px; }
+  }
+
   @media (max-width: 600px) {
     body { padding: 24px 0 0; }
     .stage { padding-left: 14px; padding-right: 14px; padding-bottom: 30px; }
@@ -464,7 +479,9 @@
     .unit-toggle-wrap { margin-bottom: 8px; }
     .unit-toggle { padding: 3px; }
     .unit-toggle button { padding: 6px 14px; font-size: 11px; letter-spacing: 1px; }
-    .sliders { padding: 6px 14px; border-radius: 18px; margin-bottom: 18px; }
+    .main-grid { grid-template-columns: 1fr; gap: 18px; }
+    .right-col { gap: 16px; }
+    .sliders { padding: 6px 14px; border-radius: 18px; }
     .row { grid-template-columns: 44px 1fr; gap: 12px; padding: 12px 0; }
     .icon { width: 44px; height: 44px; }
     .icon svg { width: 22px; height: 22px; }
@@ -476,7 +493,6 @@
     .range-meta { margin-top: 8px; font-size: 11px; }
     input[type="range"]::-webkit-slider-thumb { width: 20px; height: 20px; margin-top: -7px; }
     input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; }
-    .result-wrap { margin-bottom: 16px; }
     .tape { width: 90px; height: 22px; top: -10px; }
     .result { padding: 20px 18px 22px; grid-template-columns: 1fr; gap: 14px; border-radius: 18px; }
     .divider { display: none; }
@@ -484,7 +500,7 @@
     .wl-value { font-size: 64px; letter-spacing: -2px; margin: 2px 0 0; }
     .band-pill { font-size: 11px; padding: 6px 13px; letter-spacing: 1px; }
     .band-desc { font-size: 13px; line-height: 1.4; }
-    .scale { padding: 14px 16px 16px; margin-bottom: 28px; border-radius: 18px; }
+    .scale { padding: 14px 16px 16px; border-radius: 18px; }
     .ticks { font-size: 11px; margin-bottom: 6px; }
     .scale-bar { height: 10px; }
     .scale-bar-wrap { padding-bottom: 14px; }
@@ -513,7 +529,7 @@
   <div class="stage">
 
     <!-- header -->
-    <h1 class="h1">What's my<br/>wingload?</h1>
+    <h1 class="h1">What's my wingload?</h1>
     <p class="subtitle">Check your canopy wing loading in seconds.</p>
 
     <!-- unit toggle -->
@@ -523,6 +539,9 @@
         <button type="button" data-unit="lbs" role="tab" aria-selected="false">LBS</button>
       </div>
     </div>
+
+    <!-- main two-column grid -->
+    <div class="main-grid">
 
     <!-- sliders -->
     <section class="sliders">
@@ -600,6 +619,9 @@
 
     </section>
 
+    <!-- right column: result + scale stacked -->
+    <div class="right-col">
+
     <!-- result -->
     <div class="result-wrap">
       <div class="tape" aria-hidden="true"></div>
@@ -632,6 +654,9 @@
         <span>EXPERT</span>
       </div>
     </section>
+
+    </div><!-- /.right-col -->
+    </div><!-- /.main-grid -->
 
   </div>
 
