@@ -28,6 +28,8 @@
     --purple:       #B57EE0;
     --purple-soft: #D9BFEE;
     --purple-deep:  #9966D4;
+    --cyan:         #5BBFD0;
+    --cyan-deep:    #3DA9BC;
 
     --c-beginner:     #4EA8DE;
     --c-novice:       #5BC85B;
@@ -80,12 +82,15 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 16px;
-    align-items: stretch;
+    align-items: start;
   }
   .right-col {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 32px;
+    background: var(--card);
+    border-radius: 26px;
+    padding: 6px 6px 32px;
   }
 
   /* ---------- unit toggle ---------- */
@@ -128,16 +133,16 @@
     padding: 18px 26px;
   }
   .row {
-    padding: 18px 0;
+    padding: 12px 0;
   }
-  .row + .row { border-top: 1px solid rgba(42,26,18,0.08); }
+  .row + .row { border-top: 1px solid rgba(42,26,18,0.06); }
   .field { min-width: 0; }
   .field-top {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
     gap: 14px;
-    margin-bottom: 10px;
+    margin-bottom: 6px;
   }
   .label {
     font-family: 'Archivo', sans-serif;
@@ -183,9 +188,34 @@
     font-size: 13px;
     letter-spacing: 0.5px;
   }
-  .unit.body   { color: var(--pink); }
-  .unit.gear   { color: #7DA827; }
+  .unit.exit   { color: var(--pink); }
+  .unit.body   { color: #7DA827; }
+  .unit.gear   { color: var(--cyan-deep); }
   .unit.canopy { color: var(--purple-deep); }
+
+  /* Expand/Collapse chip next to Exit weight label */
+  .toggle-chip {
+    font-family: 'Archivo Black', 'Archivo', sans-serif;
+    font-size: 11px;
+    letter-spacing: 1.2px;
+    color: var(--purple-deep);
+    background: transparent;
+    border: none;
+    padding: 4px 6px;
+    margin-left: 6px;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background 0.15s ease, color 0.15s ease;
+    vertical-align: middle;
+    position: relative;
+    top: -2px;
+  }
+  .toggle-chip:hover { background: var(--purple-soft); color: var(--ink); }
+
+  /* Hide body+gear rows when collapsed */
+  .sliders:not(.expanded) .row.split-only { display: none; }
+  /* Indent the split rows to show they're sub-components of Exit weight */
+  .row.split-only { padding-left: 24px; }
 
   /* slider */
   .slider-wrap { position: relative; padding-top: 4px; }
@@ -238,8 +268,9 @@
     cursor: pointer;
     box-shadow: 0 2px 4px rgba(0,0,0,0.15);
   }
-  input.body   { --track-fill: var(--pink); }
-  input.gear   { --track-fill: var(--lime); }
+  input.exit   { --track-fill: var(--pink); }
+  input.body   { --track-fill: var(--lime); }
+  input.gear   { --track-fill: var(--cyan); }
   input.canopy { --track-fill: var(--purple); }
 
   .range-meta {
@@ -255,10 +286,8 @@
   /* ---------- result block ---------- */
   .result-wrap {
     position: relative;
-    flex: 1 1 auto;
     display: flex;
     flex-direction: column;
-    min-height: 0;
   }
   .tape {
     position: absolute;
@@ -287,15 +316,13 @@
   .result {
     background: var(--dark);
     color: #fff;
-    border-radius: 22px;
-    padding: 27px 32px 25px;
+    border-radius: 20px;
+    padding: 27px 28px 25px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
     gap: 18px;
     position: relative;
     width: 100%;
-    flex: 1 1 auto;
   }
   .result-left .label-small {
     font-family: 'Archivo', sans-serif;
@@ -347,11 +374,11 @@
     margin-top: 4px;
   }
 
-  /* ---------- scale ---------- */
+  /* ---------- scale (inline, no card) ---------- */
   .scale {
-    background: var(--card);
-    border-radius: 22px;
-    padding: 18px 22px 20px;
+    background: transparent;
+    border-radius: 0;
+    padding: 0 20px;
   }
   .ticks {
     display: flex;
@@ -458,7 +485,6 @@
   /* responsive tweaks */
   @media (max-width: 880px) {
     .main-grid { grid-template-columns: 1fr; gap: 18px; }
-    .right-col { gap: 16px; }
   }
 
   @media (max-width: 600px) {
@@ -470,7 +496,7 @@
     .unit-toggle { padding: 3px; }
     .unit-toggle button { padding: 6px 14px; font-size: 11px; letter-spacing: 1px; }
     .main-grid { grid-template-columns: 1fr; gap: 18px; }
-    .right-col { gap: 16px; }
+    .right-col { gap: 24px; border-radius: 18px; padding: 6px 6px 24px; }
     .sliders { padding: 6px 14px; border-radius: 18px; }
     .row { padding: 12px 0; }
     .field-top { margin-bottom: 6px; gap: 8px; }
@@ -489,7 +515,7 @@
     .wl-value { font-size: 64px; letter-spacing: -2px; margin: 2px 0 0; }
     .band-pill { font-size: 11px; padding: 6px 13px; letter-spacing: 1px; }
     .band-desc { font-size: 13px; line-height: 1.4; }
-    .scale { padding: 14px 16px 16px; border-radius: 18px; }
+    .scale { padding: 0 14px; border-radius: 0; }
     .ticks { font-size: 11px; margin-bottom: 6px; }
     .scale-bar { height: 10px; }
     .scale-bar-wrap { padding-bottom: 14px; }
@@ -533,13 +559,33 @@
     <div class="main-grid">
 
     <!-- sliders -->
-    <section class="sliders">
+    <section class="sliders" id="slidersCard">
 
-      <!-- body weight -->
+      <!-- exit weight (always visible) -->
       <div class="row">
         <div class="field">
           <div class="field-top">
-            <span class="label">Your Body Weight</span>
+            <span class="label">
+              Exit weight
+              <button type="button" class="toggle-chip" id="toggleChip" aria-expanded="false">EXPAND</button>
+            </span>
+            <span class="value-wrap">
+              <input class="value-edit" id="exitInput" type="number" value="92" min="50" max="180" step="1" inputmode="numeric" />
+              <span class="unit exit" id="exitUnitLabel">KG</span>
+            </span>
+          </div>
+          <div class="slider-wrap">
+            <input class="exit" id="exitRange" type="range" min="50" max="180" step="1" value="92" />
+          </div>
+          <div class="range-meta"><span id="exitMin">50</span><span id="exitMax">180</span></div>
+        </div>
+      </div>
+
+      <!-- body weight (visible only when expanded) -->
+      <div class="row split-only">
+        <div class="field">
+          <div class="field-top">
+            <span class="label">Body weight</span>
             <span class="value-wrap">
               <input class="value-edit" id="bodyInput" type="number" value="80" min="40" max="150" step="1" inputmode="numeric" />
               <span class="unit body" id="bodyUnitLabel">KG</span>
@@ -552,11 +598,11 @@
         </div>
       </div>
 
-      <!-- gear weight -->
-      <div class="row">
+      <!-- gear weight (visible only when expanded) -->
+      <div class="row split-only">
         <div class="field">
           <div class="field-top">
-            <span class="label">Gear Weight</span>
+            <span class="label">Gear weight</span>
             <span class="value-wrap">
               <input class="value-edit" id="gearInput" type="number" value="12" min="5" max="25" step="1" inputmode="numeric" />
               <span class="unit gear" id="gearUnitLabel">KG</span>
@@ -596,7 +642,7 @@
       <div class="tape" aria-hidden="true"></div>
       <div class="result">
         <div class="result-left">
-          <div class="label-small">YOUR WING LOADING</div>
+          <div class="label-small">YOUR WINGLOAD</div>
           <div class="wl-value" id="wlValue">1.19</div>
         </div>
         <div class="divider" aria-hidden="true"></div>
@@ -647,10 +693,10 @@
   const KG_TO_LBS = 2.20462262;
   const STORAGE_KEY = 'wingload-calc-v2';
 
-  // Slider config per unit (whole-number steps for body + gear)
+  // Slider config per unit (whole-number steps for body + gear + exit)
   const RANGES = {
-    kg:  { body: { min: 40, max: 150 }, gear: { min: 5,  max: 25 } },
-    lbs: { body: { min: 88, max: 330 }, gear: { min: 11, max: 55 } }
+    kg:  { body: { min: 40, max: 150 }, gear: { min: 5,  max: 25 }, exit: { min: 50, max: 180 } },
+    lbs: { body: { min: 88, max: 330 }, gear: { min: 11, max: 55 }, exit: { min: 110, max: 400 } }
   };
 
   // Internal storage is ALWAYS in kg. Conversion happens at display & input boundary.
@@ -658,7 +704,8 @@
     unit: 'kg',
     bodyKg: 80,
     gearKg: 12,
-    canopy: 170
+    canopy: 170,
+    expanded: false
   };
 
   // load persisted state
@@ -669,6 +716,7 @@
       if (typeof saved.bodyKg === 'number') state.bodyKg = saved.bodyKg;
       if (typeof saved.gearKg === 'number') state.gearKg = saved.gearKg;
       if (typeof saved.canopy === 'number') state.canopy = saved.canopy;
+      if (typeof saved.expanded === 'boolean') state.expanded = saved.expanded;
     }
   } catch (e) { /* ignore */ }
 
@@ -681,6 +729,11 @@
     { max: Infinity, label: 'EXPERT',       color: 'var(--c-expert)',       text: 'High-performance territory. Only for experts with regular coaching and a clear plan.' }
   ];
 
+  const exitInput   = document.getElementById('exitInput');
+  const exitRange   = document.getElementById('exitRange');
+  const exitUnitLbl = document.getElementById('exitUnitLabel');
+  const exitMinLbl  = document.getElementById('exitMin');
+  const exitMaxLbl  = document.getElementById('exitMax');
   const bodyInput   = document.getElementById('bodyInput');
   const gearInput   = document.getElementById('gearInput');
   const canopyInput = document.getElementById('canopyInput');
@@ -698,6 +751,8 @@
   const bandDesc    = document.getElementById('bandDesc');
   const pointer     = document.getElementById('pointer');
   const toggleBtns  = document.querySelectorAll('.unit-toggle button');
+  const slidersCard = document.getElementById('slidersCard');
+  const toggleChip  = document.getElementById('toggleChip');
 
   function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
 
@@ -727,15 +782,20 @@
 
   function applySliderBounds() {
     const r = RANGES[state.unit];
+    exitRange.min = r.exit.min;  exitRange.max = r.exit.max;  exitRange.step = 1;
+    exitInput.min = r.exit.min;  exitInput.max = r.exit.max;  exitInput.step = 1;
     bodyRange.min = r.body.min;  bodyRange.max = r.body.max;  bodyRange.step = 1;
     bodyInput.min = r.body.min;  bodyInput.max = r.body.max;  bodyInput.step = 1;
     gearRange.min = r.gear.min;  gearRange.max = r.gear.max;  gearRange.step = 1;
     gearInput.min = r.gear.min;  gearInput.max = r.gear.max;  gearInput.step = 1;
+    exitMinLbl.textContent = r.exit.min;
+    exitMaxLbl.textContent = r.exit.max;
     bodyMinLbl.textContent = r.body.min;
     bodyMaxLbl.textContent = r.body.max;
     gearMinLbl.textContent = r.gear.min;
     gearMaxLbl.textContent = r.gear.max;
     const u = state.unit.toUpperCase();
+    exitUnitLbl.textContent = u;
     bodyUnitLbl.textContent = u;
     gearUnitLbl.textContent = u;
   }
@@ -760,17 +820,22 @@
   function render() {
     applySliderBounds();
 
+    const exitKg = state.bodyKg + state.gearKg;
+    const exitDisp = toDisplay(exitKg);
     const bodyDisp = toDisplay(state.bodyKg);
     const gearDisp = toDisplay(state.gearKg);
 
     // Don't overwrite whichever input the user is currently typing in
+    if (focusedInput !== exitInput)   exitInput.value   = exitDisp;
     if (focusedInput !== bodyInput)   bodyInput.value   = bodyDisp;
     if (focusedInput !== gearInput)   gearInput.value   = gearDisp;
     if (focusedInput !== canopyInput) canopyInput.value = state.canopy;
 
+    exitRange.value   = exitDisp;
     bodyRange.value   = bodyDisp;
     gearRange.value   = gearDisp;
     canopyRange.value = state.canopy;
+    updateRangeFill(exitRange);
     updateRangeFill(bodyRange);
     updateRangeFill(gearRange);
     updateRangeFill(canopyRange);
@@ -780,6 +845,11 @@
       b.classList.toggle('active', active);
       b.setAttribute('aria-selected', active ? 'true' : 'false');
     });
+
+    // Expand/collapse state
+    slidersCard.classList.toggle('expanded', state.expanded);
+    toggleChip.textContent = state.expanded ? 'COLLAPSE' : 'EXPAND';
+    toggleChip.setAttribute('aria-expanded', state.expanded ? 'true' : 'false');
 
     renderResult();
   }
@@ -854,6 +924,55 @@
   bindWeightPair(bodyRange, bodyInput, 'bodyKg');
   bindWeightPair(gearRange, gearInput, 'gearKg');
   bindCanopy();
+
+  // Exit weight: dragging adjusts BODY weight only (gear stays fixed)
+  function setExitDisp(rawDisp) {
+    const r = RANGES[state.unit];
+    const clampedExit = clamp(rawDisp, r.exit.min, r.exit.max);
+    const exitKg = toKg(clampedExit);
+    const gearKg = state.gearKg;
+    const targetBodyKg = exitKg - gearKg;
+    // Clamp body to its own bounds (in kg)
+    const bodyMinKg = toKg(r.body.min);
+    const bodyMaxKg = toKg(r.body.max);
+    state.bodyKg = clamp(targetBodyKg, bodyMinKg, bodyMaxKg);
+  }
+
+  exitRange.addEventListener('input', () => {
+    setExitDisp(parseFloat(exitRange.value));
+    render();
+  });
+
+  exitInput.addEventListener('focus', () => {
+    focusedInput = exitInput;
+    exitInput.select();
+  });
+
+  exitInput.addEventListener('input', () => {
+    const raw = parseFloat(exitInput.value);
+    if (Number.isNaN(raw) || raw <= 0) return;
+    const r = RANGES[state.unit].exit;
+    if (raw >= r.min && raw <= r.max) {
+      setExitDisp(raw);
+      exitRange.value = raw;
+      updateRangeFill(exitRange);
+      renderResult();
+    }
+  });
+
+  exitInput.addEventListener('blur', () => {
+    focusedInput = null;
+    const raw = parseFloat(exitInput.value);
+    const r = RANGES[state.unit].exit;
+    setExitDisp(Number.isNaN(raw) ? r.min : clamp(raw, r.min, r.max));
+    render();
+  });
+
+  // Expand/collapse toggle
+  toggleChip.addEventListener('click', () => {
+    state.expanded = !state.expanded;
+    render();
+  });
 
   // toggle handler
   toggleBtns.forEach(btn => {
