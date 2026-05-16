@@ -738,16 +738,34 @@
     gearUnitLbl.textContent = u;
   }
 
+  // Track which input is being typed into so render() won't overwrite it mid-type
+  let focusedInput = null;
+
+  // Update only the result side (wl, band, pointer) — safe to call while typing
+  function renderResult() {
+    const exitLbs = (state.bodyKg + state.gearKg) * KG_TO_LBS;
+    const wl = exitLbs / state.canopy;
+    wlValueEl.textContent = wl.toFixed(2);
+    const band = bandFor(wl);
+    bandPill.textContent = band.label;
+    bandPill.style.background = band.color;
+    bandDesc.textContent = band.text;
+    const p = clamp(((wl - 0.5) / (2.3 - 0.5)) * 100, 0, 100);
+    pointer.style.left = p + '%';
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+  }
+
   function render() {
     applySliderBounds();
 
-    // display values (converted from internal kg)
     const bodyDisp = toDisplay(state.bodyKg);
     const gearDisp = toDisplay(state.gearKg);
 
-    bodyInput.value   = bodyDisp;
-    gearInput.value   = gearDisp;
-    canopyInput.value = state.canopy;
+    // Don't overwrite whichever input the user is currently typing in
+    if (focusedInput !== bodyInput)   bodyInput.value   = bodyDisp;
+    if (focusedInput !== gearInput)   gearInput.value   = gearDisp;
+    if (focusedInput !== canopyInput) canopyInput.value = state.canopy;
+
     bodyRange.value   = bodyDisp;
     gearRange.value   = gearDisp;
     canopyRange.value = state.canopy;
@@ -755,54 +773,48 @@
     updateRangeFill(gearRange);
     updateRangeFill(canopyRange);
 
-    // toggle active state
     toggleBtns.forEach(b => {
       const active = b.dataset.unit === state.unit;
       b.classList.toggle('active', active);
       b.setAttribute('aria-selected', active ? 'true' : 'false');
     });
 
-    // calculate (always uses internal kg)
-    const exitLbs = (state.bodyKg + state.gearKg) * KG_TO_LBS;
-    const wl = exitLbs / state.canopy;
-    wlValueEl.textContent = wl.toFixed(2);
-
-    // band
-    const band = bandFor(wl);
-    bandPill.textContent = band.label;
-    bandPill.style.background = band.color;
-    bandDesc.textContent = band.text;
-
-    // pointer position on 0.5–2.3 scale
-    const p = clamp(((wl - 0.5) / (2.3 - 0.5)) * 100, 0, 100);
-    pointer.style.left = p + '%';
-
-    // persist
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+    renderResult();
   }
 
-  // Bind paired range + numeric input for a "weight" field that respects the active unit
+  // Bind paired range + numeric input for a "weight" field
   function bindWeightPair(rangeEl, inputEl, key) {
+    const rangeKey = key === 'bodyKg' ? 'body' : 'gear';
+
     rangeEl.addEventListener('input', () => {
-      const raw = parseFloat(rangeEl.value);
-      state[key] = toKg(raw);
+      state[key] = toKg(parseFloat(rangeEl.value));
       render();
     });
+
+    inputEl.addEventListener('focus', () => {
+      focusedInput = inputEl;
+      inputEl.select();
+    });
+
     inputEl.addEventListener('input', () => {
       const raw = parseFloat(inputEl.value);
-      if (Number.isNaN(raw)) return;
-      const r = RANGES[state.unit][key === 'bodyKg' ? 'body' : 'gear'];
-      state[key] = toKg(clamp(raw, r.min, r.max));
-      render();
-    });
-    inputEl.addEventListener('blur', () => {
-      if (Number.isNaN(parseFloat(inputEl.value))) {
-        inputEl.value = toDisplay(state[key]);
-      } else {
-        const r = RANGES[state.unit][key === 'bodyKg' ? 'body' : 'gear'];
-        state[key] = toKg(clamp(parseFloat(inputEl.value), r.min, r.max));
-        render();
+      if (Number.isNaN(raw) || raw <= 0) return;
+      const r = RANGES[state.unit][rangeKey];
+      // Only update state + slider when value is within range; clamp happens on blur
+      if (raw >= r.min && raw <= r.max) {
+        state[key] = toKg(raw);
+        rangeEl.value = raw;
+        updateRangeFill(rangeEl);
+        renderResult();
       }
+    });
+
+    inputEl.addEventListener('blur', () => {
+      focusedInput = null;
+      const raw = parseFloat(inputEl.value);
+      const r = RANGES[state.unit][rangeKey];
+      state[key] = toKg(Number.isNaN(raw) ? r.min : clamp(raw, r.min, r.max));
+      render();
     });
   }
 
@@ -812,19 +824,28 @@
       state.canopy = parseFloat(canopyRange.value);
       render();
     });
+
+    canopyInput.addEventListener('focus', () => {
+      focusedInput = canopyInput;
+      canopyInput.select();
+    });
+
     canopyInput.addEventListener('input', () => {
       const raw = parseFloat(canopyInput.value);
-      if (Number.isNaN(raw)) return;
-      state.canopy = clamp(raw, 60, 400);
-      render();
-    });
-    canopyInput.addEventListener('blur', () => {
-      if (Number.isNaN(parseFloat(canopyInput.value))) {
-        canopyInput.value = state.canopy;
-      } else {
-        state.canopy = clamp(parseFloat(canopyInput.value), 60, 400);
-        render();
+      if (Number.isNaN(raw) || raw <= 0) return;
+      if (raw >= 60 && raw <= 400) {
+        state.canopy = raw;
+        canopyRange.value = raw;
+        updateRangeFill(canopyRange);
+        renderResult();
       }
+    });
+
+    canopyInput.addEventListener('blur', () => {
+      focusedInput = null;
+      const raw = parseFloat(canopyInput.value);
+      state.canopy = Number.isNaN(raw) ? 60 : clamp(raw, 60, 400);
+      render();
     });
   }
 
