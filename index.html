@@ -714,7 +714,8 @@
     if (saved && typeof saved === 'object') {
       if (saved.unit === 'kg' || saved.unit === 'lbs') state.unit = saved.unit;
       if (typeof saved.bodyKg === 'number') state.bodyKg = saved.bodyKg;
-      if (typeof saved.gearKg === 'number') state.gearKg = saved.gearKg;
+      // Only restore gear weight if user had previously expanded — otherwise reset to 12kg baseline
+      if (typeof saved.gearKg === 'number' && saved.expanded === true) state.gearKg = saved.gearKg;
       if (typeof saved.canopy === 'number') state.canopy = saved.canopy;
       if (typeof saved.expanded === 'boolean') state.expanded = saved.expanded;
     }
