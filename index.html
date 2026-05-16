@@ -128,13 +128,10 @@
     gap: 16px;
     align-items: start;
   }
+  .main-grid:has(.sliders.expanded) { align-items: stretch; }
   .right-col {
     display: flex;
     flex-direction: column;
-    gap: 32px;
-    background: var(--card);
-    border-radius: 26px;
-    padding: 6px 6px 32px;
   }
 
   /* ---------- unit toggle ---------- */
@@ -332,6 +329,7 @@
     position: relative;
     display: flex;
     flex-direction: column;
+    flex: 1;
   }
   .tape {
     position: absolute;
@@ -361,12 +359,14 @@
     background: var(--dark);
     color: #fff;
     border-radius: 20px;
-    padding: 27px 28px 25px;
+    padding: 40px 28px;
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
     gap: 18px;
     position: relative;
     width: 100%;
+    flex: 1;
   }
   .result-left .label-small {
     font-family: 'Archivo', sans-serif;
@@ -374,7 +374,7 @@
     font-size: 12px;
     letter-spacing: 1.4px;
     color: rgba(255,255,255,0.85);
-    margin-bottom: 4px;
+    margin-bottom: 12px;
   }
   .wl-value {
     font-family: 'Archivo Black', sans-serif;
@@ -409,27 +409,23 @@
   }
   .coach-nudge {
     font-family: 'Archivo', sans-serif;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.3px;
-    color: rgba(255,255,255,0.4);
-    padding-top: 10px;
-    border-top: 1px solid rgba(255,255,255,0.1);
-    margin-top: 4px;
+    font-size: 15px;
+    color: rgba(255,255,255,0.45);
+    line-height: 1.45;
   }
 
-  /* ---------- scale (inline, no card) ---------- */
+  /* ---------- scale (inside dark result card) ---------- */
   .scale {
     background: transparent;
     border-radius: 0;
-    padding: 0 20px;
+    padding: 0;
   }
   .ticks {
     display: flex;
     justify-content: space-between;
     font-family: 'Space Mono', monospace;
     font-size: 13px;
-    color: var(--ink);
+    color: #EDE4D9;
     margin-bottom: 8px;
     padding: 0 2px;
   }
@@ -451,7 +447,7 @@
     width: 0; height: 0;
     border-left: 9px solid transparent;
     border-right: 9px solid transparent;
-    border-bottom: 13px solid var(--ink);
+    border-bottom: 13px solid transparent;
     transform: translateX(-50%) rotate(180deg);
     transition: left 0.18s ease;
   }
@@ -463,7 +459,7 @@
     font-size: 12px;
     font-weight: 700;
     letter-spacing: 1.2px;
-    color: var(--ink);
+    color: #EDE4D9;
   }
   .scale-labels span { text-align: center; }
 
@@ -540,7 +536,6 @@
     .unit-toggle { padding: 3px; }
     .unit-toggle button { padding: 6px 14px; font-size: 11px; letter-spacing: 1px; }
     .main-grid { grid-template-columns: 1fr; gap: 18px; }
-    .right-col { gap: 24px; border-radius: 18px; padding: 6px 6px 24px; }
     .sliders { padding: 6px 14px; border-radius: 18px; }
     .row { padding: 12px 0; }
     .field-top { margin-bottom: 6px; gap: 8px; }
@@ -559,7 +554,7 @@
     .wl-value { font-size: 64px; letter-spacing: -2px; margin: 2px 0 0; }
     .band-pill { font-size: 11px; padding: 6px 13px; letter-spacing: 1px; }
     .band-desc { font-size: 13px; line-height: 1.4; }
-    .scale { padding: 0 14px; border-radius: 0; }
+    .scale { padding: 0; border-radius: 0; }
     .ticks { font-size: 11px; margin-bottom: 6px; }
     .scale-bar { height: 10px; }
     .scale-bar-wrap { padding-bottom: 14px; }
@@ -695,25 +690,24 @@
           <div class="band-desc" id="bandDesc">A balanced wing loading that offers a blend of performance and forgiveness.</div>
           <div class="coach-nudge">Before downsizing, talk to a coach.</div>
         </div>
+        <div class="divider" aria-hidden="true"></div>
+        <section class="scale" aria-label="Wingload scale">
+          <div class="ticks">
+            <span>0.5</span><span>0.8</span><span>1.1</span><span>1.4</span><span>1.7</span><span>2.0</span><span>2.3+</span>
+          </div>
+          <div class="scale-bar-wrap">
+            <div class="scale-bar"></div>
+            <div class="pointer" id="pointer" style="left: 38%;"></div>
+          </div>
+          <div class="scale-labels">
+            <span>BEGINNER</span>
+            <span>INTERMEDIATE</span>
+            <span>ADVANCED</span>
+            <span>EXPERT</span>
+          </div>
+        </section>
       </div>
     </div>
-
-    <!-- scale -->
-    <section class="scale" aria-label="Wingload scale">
-      <div class="ticks">
-        <span>0.5</span><span>0.8</span><span>1.1</span><span>1.4</span><span>1.7</span><span>2.0</span><span>2.3+</span>
-      </div>
-      <div class="scale-bar-wrap">
-        <div class="scale-bar"></div>
-        <div class="pointer" id="pointer" style="left: 38%;"></div>
-      </div>
-      <div class="scale-labels">
-        <span>BEGINNER</span>
-        <span>INTERMEDIATE</span>
-        <span>ADVANCED</span>
-        <span>EXPERT</span>
-      </div>
-    </section>
 
     </div><!-- /.right-col -->
     </div><!-- /.main-grid -->
@@ -848,6 +842,38 @@
   // Track which input is being typed into so render() won't overwrite it mid-type
   let focusedInput = null;
 
+  // Interpolate between two hex colors by t (0–1)
+  function lerpColor(a, b, t) {
+    const ah = parseInt(a.slice(1), 16), bh = parseInt(b.slice(1), 16);
+    const ar = (ah >> 16) & 0xff, ag = (ah >> 8) & 0xff, ab = ah & 0xff;
+    const br = (bh >> 16) & 0xff, bg = (bh >> 8) & 0xff, bb = bh & 0xff;
+    const r = Math.round(ar + (br - ar) * t);
+    const g = Math.round(ag + (bg - ag) * t);
+    const bv = Math.round(ab + (bb - ab) * t);
+    return '#' + [r, g, bv].map(v => v.toString(16).padStart(2, '0')).join('');
+  }
+
+  // Gradient stops matching the scale-bar gradient
+  const SCALE_STOPS = [
+    { pct: 0,   color: '#4EA8DE' },
+    { pct: 17,  color: '#5BC85B' },
+    { pct: 33,  color: '#C5DE36' },
+    { pct: 50,  color: '#F4D03F' },
+    { pct: 67,  color: '#F39C12' },
+    { pct: 100, color: '#E0432F' },
+  ];
+
+  function scaleGradientColor(p) {
+    let lo = SCALE_STOPS[0], hi = SCALE_STOPS[SCALE_STOPS.length - 1];
+    for (let i = 0; i < SCALE_STOPS.length - 1; i++) {
+      if (p >= SCALE_STOPS[i].pct && p <= SCALE_STOPS[i + 1].pct) {
+        lo = SCALE_STOPS[i]; hi = SCALE_STOPS[i + 1]; break;
+      }
+    }
+    const t = lo.pct === hi.pct ? 0 : (p - lo.pct) / (hi.pct - lo.pct);
+    return lerpColor(lo.color, hi.color, t);
+  }
+
   // Update only the result side (wl, band, pointer) — safe to call while typing
   function renderResult() {
     const exitLbs = (state.bodyKg + state.gearKg) * KG_TO_LBS;
@@ -859,6 +885,7 @@
     bandDesc.textContent = band.text;
     const p = clamp(((wl - 0.5) / (2.3 - 0.5)) * 100, 0, 100);
     pointer.style.left = p + '%';
+    pointer.style.borderBottomColor = scaleGradientColor(p);
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
   }
 
