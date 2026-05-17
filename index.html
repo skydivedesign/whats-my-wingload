@@ -811,11 +811,21 @@
     rangeEl.style.setProperty('--p', p + '%');
   }
 
-  function bandFor(wl) {
+  const SMALL_CANOPY_THRESHOLD = 120; // sq ft — below this, minimum band is Intermediate
+  const SMALL_CANOPY_MIN_BAND  = 'INTERMEDIATE';
+
+  function bandFor(wl, canopySqFt) {
+    let band = BANDS[BANDS.length - 1];
     for (const b of BANDS) {
-      if (wl < b.max) return b;
+      if (wl < b.max) { band = b; break; }
     }
-    return BANDS[BANDS.length - 1];
+    // Small canopy override: sub-120 sq ft canopies fly aggressive regardless of wing loading
+    if (canopySqFt < SMALL_CANOPY_THRESHOLD) {
+      const minIdx = BANDS.findIndex(b => b.label === SMALL_CANOPY_MIN_BAND);
+      const curIdx = BANDS.indexOf(band);
+      if (curIdx < minIdx) band = BANDS[minIdx];
+    }
+    return band;
   }
 
   function applySliderBounds() {
@@ -878,7 +888,7 @@
     const exitLbs = (state.bodyKg + state.gearKg) * KG_TO_LBS;
     const wl = exitLbs / state.canopy;
     wlValueEl.textContent = wl.toFixed(2);
-    const band = bandFor(wl);
+    const band = bandFor(wl, state.canopy);
     bandPill.textContent = band.label;
     bandPill.style.background = band.color;
     bandDesc.textContent = band.text;
