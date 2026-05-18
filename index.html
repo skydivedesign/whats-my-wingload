@@ -659,14 +659,14 @@
           <div class="field-top">
             <span class="label">Canopy Size</span>
             <span class="value-wrap">
-              <input class="value-edit" id="canopyInput" type="number" value="170" min="60" max="400" step="1" inputmode="numeric" />
+              <input class="value-edit" id="canopyInput" type="number" value="170" min="55" max="400" step="1" inputmode="numeric" />
               <span class="unit canopy">SQ FT</span>
             </span>
           </div>
           <div class="slider-wrap">
-            <input class="canopy" id="canopyRange" type="range" min="60" max="400" step="1" value="170" />
+            <input class="canopy" id="canopyRange" type="range" min="55" max="400" step="1" value="170" />
           </div>
-          <div class="range-meta"><span>60</span><span>400</span></div>
+          <div class="range-meta"><span>55</span><span>400</span></div>
         </div>
       </div>
 
@@ -986,7 +986,7 @@
     canopyInput.addEventListener('input', () => {
       const raw = parseFloat(canopyInput.value);
       if (Number.isNaN(raw) || raw <= 0) return;
-      if (raw >= 60 && raw <= 400) {
+      if (raw >= 55 && raw <= 400) {
         state.canopy = raw;
         canopyRange.value = raw;
         updateRangeFill(canopyRange);
@@ -997,7 +997,7 @@
     canopyInput.addEventListener('blur', () => {
       focusedInput = null;
       const raw = parseFloat(canopyInput.value);
-      state.canopy = Number.isNaN(raw) ? 60 : clamp(raw, 60, 400);
+      state.canopy = Number.isNaN(raw) ? 55 : clamp(raw, 55, 400);
       render();
     });
   }
